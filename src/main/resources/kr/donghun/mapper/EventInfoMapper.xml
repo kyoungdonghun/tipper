@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.donghun.mapper.EventInfoMapper">
+
+  <insert id="saveEventInfo" parameterType="kr.donghun.domain.EventInfoVO">
+    INSERT INTO eventtable (id, title, thumbnail, link, startdate, enddate, rewarddate, viewcount,post_type,replycount)
+    VALUES (
+      eventtable_seq.nextval,
+      #{title},
+      #{thumbnail},
+      #{link},
+      #{startDate, jdbcType=DATE},
+      #{endDate, jdbcType=DATE},
+      #{rewardDate, jdbcType=DATE},
+      0,
+      'EVENT',
+      0
+    )
+  </insert>
+
+	<select id="readEventInfo" resultType="kr.donghun.domain.EventInfoVO">
+		<![CDATA[
+			SELECT * FROM (
+				SELECT * FROM eventtable
+				ORDER BY startdate DESC
+			)
+			WHERE ROWNUM <= 10
+		]]>
+	</select>
+
+	<select id="read" resultType="kr.donghun.domain.EventInfoVO">
+		Select * from eventtable where id = #{id}
+	</select>
+	
+  <select id="countEventsByTitle" resultType="int">
+    SELECT COUNT(*) FROM eventtable WHERE title = #{title}
+  </select>
+  
+</mapper>

@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+  <mapper namespace="kr.donghun.mapper.MemberMapper">
+  
+  <resultMap type="kr.donghun.domain.MemberVO" id="memberMap">
+		<result property="email" column="email" />
+		<result property="name" column="name" />
+		<result property="password" column="password" />
+		<result property="agegroup" column="agegroup" />
+		<result property="birth" column="birth" />
+		<result property="phonenumber" column="phonenumber" />
+		  		
+  		<collection property="authList" resultMap="authMap"></collection>
+  	</resultMap>
+  	
+  	<resultMap type="kr.donghun.domain.AuthDTO" id="authMap">
+  		<result property="email" column="email"/>
+  		<result property="auth" column="auth"/>
+  	</resultMap>
+  
+    <insert id="insertAuth">
+  		insert into tbl_member_auth(EMAIL,auth) values (#{email},'ROLE_MEMBER')
+  	</insert>
+  
+  	<select id="read" resultMap="memberMap">
+  	select
+  		mem.email,
+  		mem.name,
+  		mem.password,
+  		mem.agegroup,
+  		mem.birth,
+  		mem.phonenumber,
+  		auth
+  	from
+  		membertable mem
+  	LEFT OUTER JOIN
+  		tbl_member_auth auth
+  	on
+  		mem.email = auth.email
+  	where
+  		mem.email = #{email}
+  	</select>
+  	
+  	<insert id="insert">
+  		insert into MEMBERTABLE(email, name, password, agegroup, birth, phonenumber) values(#{email},#{name},#{password},#{agegroup, jdbcType=VARCHAR}, #{birth}, #{phonenumber})
+  	</insert>
+  	
+  	<!-- <select id="login" resultType="kr.donghun.domain.MemberVO">
+  		select * from MEMBERTABLE where email =#{email} AND password=#{password}
+  	</select>
+  	 -->
+  	
+  	<select id="listOne" resultType="kr.donghun.domain.MemberVO">
+  		select * from MEMBERTABLE where email =#{email}
+  	</select>
+  	
+  	<select id="findpw" resultType="kr.donghun.domain.MemberVO">
+  		select * from MEMBERTABLE where email = #{email} AND phonenumber=#{phonenumber}
+  	</select>
+  	
+  	<select id="findid" resultType="kr.donghun.domain.MemberVO">
+  		select * from MEMBERTABLE where phonenumber= #{phonenumber}
+  	</select>
+  	
+  	<select id="checkEmail" resultType="int">
+  		SELECT COUNT(*) FROM membertable WHERE email = #{email}
+  	</select>
+  	
+  	<select id="checkNickname" resultType="int">
+  		SELECT COUNT(*) FROM membertable WHERE NICKNAME = #{nickname}
+  	</select>
+  	
+  	<delete id="delete">
+		delete from MEMBERTABLE where email = #{email}  AND password=#{password}	
+  	</delete>
+  
+  	<update id="infoUpdate">
+  		update MEMBERTABLE set name=#{name}, agegroup=#{agegroup}, phonenumber = #{phonenumber} where email= #{email}
+  	</update>
+  	
+  	<update id="passwordUpdate">
+  		update MEMBERTABLE set password=#{password} where email= #{email}
+  	</update>
+  	
+	<update id="passwordUpdate2">
+  		update MEMBERTABLE set password=#{password} where email= #{email} AND phonenumber = #{phonenumber}
+  	</update>
+  	
+  <!-- 페이징 관련기능 추후 확인 후 수정하기. -->
+  	<!-- <select id="getListWithPaging" resultType="kr.donghun.domain.ReplyVO">
+  		<![CDATA[
+  		select rno,bno,reply,replyer,replyDate,updateDate
+  		from
+  		(
+  		select /*+ INDEX(tbl_reply idx_reply) */
+  			rownum rn,rno,bno,reply,replyer,replyDate,updateDate
+  		from tbl_reply
+  		where bno = #{bno}
+  		and rno > 0
+  		and rownum <= #{cri.pageNum} * #{cri.amount}
+  		)
+  		where rn > (#{cri.pageNum} -1) * #{cri.amount}
+  		]]>
+  	</select>
+  
+  <select id="getCountByBno" resultType="int">
+	  <![CDATA[
+	  	select count(rno) from tbl_reply where bno =#{bno}
+	  ]]>
+  </select> -->
+  </mapper>

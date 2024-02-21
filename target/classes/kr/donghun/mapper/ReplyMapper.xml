@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+  <mapper namespace="kr.donghun.mapper.ReplyMapper">
+  	
+  	<insert id="insert">
+  		insert into REPLYTABLE(replyid,postid,email,replytext,post_type,rereplyid,depth,isdelete) values(REPLYTABLE_SEQ.nextval, #{postid}, #{email}, #{replytext},#{post_type}, #{rereplyid, jdbcType=BIGINT},#{depth, jdbcType=BIGINT},'none')
+  	</insert>
+  	
+  	<insert id="reinsert">
+  		insert into REPLYTABLE(replyid,postid,email,replytext,post_type,rereplyid,depth,isdelete) values(REPLYTABLE_SEQ.nextval, #{postid}, #{email}, #{replytext},#{post_type},#{rereplyid},1,'none')
+  	</insert>
+  	
+  	<!-- 글 혹은 댓글의 무슨타입인지, 그리고 걔가 몇번쨰 글인지 확인하고 모든 댓글 보이기. -->
+  	<select id="getList" resultType="kr.donghun.domain.ReplyVO">
+  		select * from REPLYTABLE where post_type=#{post_type} AND postid=#{postid}
+  	</select>
+  	
+  	<select id="getListOne" resultType="kr.donghun.domain.ReplyVO">
+  		select * from REPLYTABLE where post_type=#{post_type} AND replyid=#{replyid}
+  	</select>
+  	
+  	<delete id="delete">
+		update replytable set isdelete = 'delete' where replyid= #{replyid}
+  	</delete>
+  
+  	<update id="update">
+  		update REPLYTABLE set replytext = #{replytext}, updatedate = sysdate where replyid=#{replyid}
+  	</update>
+  
+  <!-- 아래는 페이징 관련.후에 다시 확인해볼것. -->
+	<select id="getListWithPaging" resultType="kr.donghun.domain.ReplyVO">
+<![CDATA[
+ select   
+    replyid, postid, email, replytext, createdate, updatedate, likecount, post_type, rereplyid, depth,isdelete
+    from(
+    select 
+       rownum rn, replyid, postid, email, replytext, createdate, updatedate, likecount, post_type, rereplyid, depth,isdelete
+        from
+            (
+            SELECT *
+                FROM (
+                  SELECT 
+                    *        
+                  FROM 
+                    replytable
+                  WHERE 
+                   post_type = #{post_type} AND postid = #{postid}
+        
+                )
+            start with rereplyid = 0
+            connect by prior replyid = rereplyid
+            order siblings by replyid
+            )
+        where rownum <= #{cri.pageNum} * #{cri.amount}
+        )
+    where rn > (#{cri.pageNum} -1) * #{cri.amount}
+
+
+
+]]>
+	
+<!--   		<![CDATA[
+  		select 
+  			replyid, postid, email, replytext, createdate, updatedate, likecount, post_type, rereplyid, depth
+  			
+	  		from
+	  			(
+	  			select /*+ INDEX(replytable pk_replytable) */
+	  			rownum rn, replyid, postid, email, replytext, createdate, updatedate, likecount, post_type, rereplyid, depth
+	  		from 
+	  			replytable
+	  		where 
+	  			postid = #{postid} AND post_type = #{post_type}
+	  		and 
+	  			replyid > 0
+	  		and
+	  			 rownum <= #{cri.pageNum} * #{cri.amount}
+	  		)
+  		where
+  			 rn > (#{cri.pageNum} -1) * #{cri.amount}
+  		]]> -->
+  	</select>
+  
+  <select id="getCountByPostid" resultType="int">
+	  <![CDATA[
+	  	select count(replyid) from replytable where postid =#{postid}
+	  ]]>
+  </select>
+  
+  
+<!--   <select id="getCountByBno" resultType="int">
+	  <![CDATA[
+	  	select count(rno) from tbl_reply where bno =#{bno}
+	  ]]>
+  </select> -->
+  
+  
+  </mapper>

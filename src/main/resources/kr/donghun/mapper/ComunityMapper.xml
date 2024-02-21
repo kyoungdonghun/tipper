@@ -1,0 +1,149 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+  <mapper namespace="kr.donghun.mapper.ComunityMapper">
+  	
+  	<insert id="insert" useGeneratedKeys="true" keyColumn="comunitynumber" keyProperty="comunitynumber">
+  		insert into COMUNITYTABLE(comunitynumber,title,writer,comunitytext,comunityfile) values(COMUNITYTABLE_SEQ.nextval,#{title},#{writer},#{comunitytext},#{comunityfile, jdbcType=VARCHAR})
+  	</insert>
+  	
+  	<select id="getList" resultType="kr.donghun.domain.ComunityVO">
+  		select * from COMUNITYTABLE 
+  	</select>
+  	
+  	<select id="getOne" resultType="kr.donghun.domain.ComunityVO">
+  		select * from COMUNITYTABLE where COMUNITYNUMBER=#{COMUNITYNUMBER}
+  	</select>
+  	
+  	<delete id="delete">
+		delete from COMUNITYTABLE where COMUNITYNUMBER = #{COMUNITYNUMBER} 
+  	</delete>
+  
+  	<update id="update">
+  		update COMUNITYTABLE set title = #{title},comunitytext=#{comunitytext},comunityfile=#{comunityfile, jdbcType=VARCHAR}, updatedate = sysdate where comunitynumber= #{comunitynumber}
+  	</update>
+  	
+  	<!-- 페이징은 추후에 확인 한번 해보자.  -->
+
+	<insert id="addViewCount">
+		update COMUNITYTABLE set viewcount = viewcount+1 where comunitynumber = #{comunitynumber}
+	</insert>
+
+
+
+
+	<select id="getTotalCount" resultType="int">
+  	
+  		select count(*) from comunitytable where 
+  			<include refid="criteria"/>
+  		comunitynumber>0
+  	</select>
+
+  	  	<sql id="criteria">
+  			<trim prefix="(" suffix=") AND " prefixOverrides="OR">
+	  				<trim prefix="OR">
+	  					<choose>
+	  						<when test="post_type == 'COMUNITY'">
+	  							title like '%' || #{keyword} ||'%' or comunitytext like '%' || #{keyword}||'%'
+	  						</when>
+	  					</choose>
+	  				</trim>
+	  		</trim>
+	  	</sql>
+	  	
+  	  	<select id="getListWithPaging" resultType="kr.donghun.domain.ComunityVO" parameterType="kr.donghun.domain.Criteria">
+  		<![CDATA[
+		select
+			comunitynumber, title, writer, createdate, updatedate, viewcount, likecount, post_type, comunitytext, comunityfile, replycount
+		from
+		    (
+			select /*+INDEX_desc(comunitytable SYS_C007056)*/
+		    	rownum rn, comunitynumber, title, writer, createdate, updatedate, viewcount, likecount, post_type, comunitytext, comunityfile, replycount
+		    from 
+		        comunitytable
+  			where
+  		]]>
+
+  			<include refid="criteria"/>
+  			
+  		<![CDATA[
+  			rownum <= #{pageNum} * #{amount}
+			)
+  			where rn> (#{pageNum}-1) * #{amount}
+  			]]>
+  		</select>
+  		
+  		<select id="getListWithPagingView" resultType="kr.donghun.domain.ComunityVO" parameterType="kr.donghun.domain.Criteria">
+ 		    <![CDATA[
+		    select
+		        comunitynumber, title, writer, createdate, updatedate, viewcount, likecount, post_type, comunitytext, comunityfile, replycount
+		    from
+		        (
+		        select /*+INDEX(comunitytable idx_viewcount)*/
+		            rownum rn, comunitynumber, title, writer, createdate, updatedate, viewcount, likecount, post_type, comunitytext, comunityfile, replycount
+		        from 
+		            comunitytable
+		        order by viewcount desc
+		        )
+		    where
+		    ]]>
+		
+		    <include refid="criteria"/>
+		
+		    <![CDATA[
+		        rn > (#{pageNum}-1) * #{amount}
+		        and rownum <= #{pageNum} * #{amount}
+		    ]]>
+		</select>
+  		
+  		
+  		<select id="getListWithPagingLikes" resultType="kr.donghun.domain.ComunityVO" parameterType="kr.donghun.domain.Criteria">
+		    <![CDATA[
+		    select
+		        comunitynumber, title, writer, createdate, updatedate, viewcount, likecount, post_type, comunitytext, comunityfile, replycount
+		    from
+		        (
+		        select /*+INDEX(comunitytable idx_likecount)*/
+		            rownum rn, comunitynumber, title, writer, createdate, updatedate, viewcount, likecount, post_type, comunitytext, comunityfile, replycount
+		        from 
+		            comunitytable
+		        order by likecount desc
+		        )
+		    where
+		    ]]>
+		
+		    <include refid="criteria"/>
+		
+		    <![CDATA[
+		        rn > (#{pageNum}-1) * #{amount}
+		        and rownum <= #{pageNum} * #{amount}
+		    ]]>
+		</select>
+  		
+  		
+  		<select id="getListWithPagingReply" resultType="kr.donghun.domain.ComunityVO" parameterType="kr.donghun.domain.Criteria">
+  				    <![CDATA[
+		    select
+		        comunitynumber, title, writer, createdate, updatedate, viewcount, likecount, post_type, comunitytext, comunityfile, replycount
+		    from
+		        (
+		        select /*+INDEX(comunitytable idx_replycount)*/
+		            rownum rn, comunitynumber, title, writer, createdate, updatedate, viewcount, likecount, post_type, comunitytext, comunityfile, replycount
+		        from 
+		            comunitytable
+		        order by replycount desc
+		        )
+		    where
+		    ]]>
+		
+		    <include refid="criteria"/>
+		
+		    <![CDATA[
+		        rn > (#{pageNum}-1) * #{amount}
+		        and rownum <= #{pageNum} * #{amount}
+		    ]]>
+		</select>
+  
+  </mapper>
+  

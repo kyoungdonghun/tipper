@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+  <mapper namespace="kr.donghun.mapper.LikesMapper">
+  	
+  	<!-- 좋아요 관련해서 테이블 수정이 필요함.
+post타입을 사용하면 포스트아이디나 리플라이아이디를 사용하지않아도됨. -->
+  	<insert id="insert">
+  		insert into LIKESTABLE (LIKEID, postid, email, post_type) values(LIKESTABLE_SEQ.nextval, #{postid}, #{email}, #{post_type})
+  	</insert>
+  	
+	<select id="read" resultType="kr.donghun.domain.LikesVO">
+  		select * from LIKESTABLE where email = #{email} AND postid = #{postid}
+  	</select> 
+  	
+  	<delete id="delete">
+		delete from LIKESTABLE where post_type = #{post_type} AND likeid=#{likeid} AND postid=#{postid}
+  	</delete>
+  
+  </mapper>

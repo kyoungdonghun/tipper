@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+  <mapper namespace="kr.donghun.mapper.AttachFileMapper">
+  	
+  	<insert id="insert">
+		insert into filetable(fno,postid,post_type,fileName,uploadPath,uuid) values(FILETABLE_SEQ.nextval,#{postid},#{post_type},#{fileName},#{uploadPath},#{uuid})  		
+  	</insert>
+  	
+  	<delete id="delete">
+		delete from filetable where uuid = #{uuid}
+  	</delete>
+  
+  	<select id="findByComunitynumber" resultType="kr.donghun.domain.AttachFileDTO">
+  		select * from filetable where postid = #{postid} AND post_type = #{post_type}
+  	</select>
+  	
+  	<delete id="deleteAll">
+  		delete filetable where postid=#{postid}
+  	</delete>
+  	
+  	<select id="getOldFiles" resultType="kr.donghun.domain.AttachFileDTO">
+  		select * from filetable where uploadpath = to_char(sysdate -1, 'yyyy\mm\dd')
+  	</select>
+  	
+  </mapper>
